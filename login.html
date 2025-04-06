@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - AI Mathanda</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .loading-spinner {
+            display: none;
+        }
+        .loading-spinner.active {
+            display: flex;
+        }
+        @keyframes mathSpin {
+            0%, 100% { content: "∑"; }
+            25% { content: "∏"; }
+            50% { content: "√"; }
+            75% { content: "∫"; }
+        }
+        .loading-spinner::after {
+            content: "∑";
+            animation: mathSpin 2s infinite;
+            font-size: 2rem;
+        }
+    </style>
+</head>
+<body class="bg-white min-h-screen flex flex-col justify-center">
+    <div class="sm:mx-auto sm:w-full sm:max-w-md">
+        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Login ke AI Mathanda
+        </h2>
+        <p class="mt-2 text-center text-sm text-gray-600">
+            Atau
+            <a href="/" class="font-medium text-black hover:text-gray-800">
+                kembali ke halaman utama
+            </a>
+        </p>
+    </div>
+
+    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="bg-white py-8 px-4 shadow-lg border border-black sm:rounded-lg sm:px-10">
+            <form class="space-y-6" id="loginForm">
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700">
+                        Email
+                    </label>
+                    <div class="mt-1">
+                        <input id="email" name="email" type="email" autocomplete="email" required
+                            class="appearance-none block w-full px-3 py-2 border border-black rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black sm:text-sm">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700">
+                        Password
+                    </label>
+                    <div class="mt-1">
+                        <input id="password" name="password" type="password" autocomplete="current-password" required
+                            class="appearance-none block w-full px-3 py-2 border border-black rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black sm:text-sm">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input id="remember_me" name="remember_me" type="checkbox"
+                            class="h-4 w-4 text-black focus:ring-black border-gray-300 rounded">
+                        <label for="remember_me" class="ml-2 block text-sm text-gray-900">
+                            Ingat saya
+                        </label>
+                    </div>
+
+                    <div class="text-sm">
+                        <a href="#" class="font-medium text-black hover:text-gray-800">
+                            Lupa password?
+                        </a>
+                    </div>
+                </div>
+
+                <div>
+                    <button type="submit"
+                        class="w-full flex justify-center py-2 px-4 border border-black rounded-md shadow-sm text-sm font-medium text-black bg-white hover:bg-black hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors duration-200">
+                        Login
+                    </button>
+                </div>
+
+                <!-- Loading Spinner -->
+                <div class="loading-spinner justify-center items-center text-4xl text-black"></div>
+
+                <!-- Error Message -->
+                <div id="errorMessage" class="hidden text-red-600 text-sm text-center"></div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const spinner = document.querySelector('.loading-spinner');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            // Show loading spinner
+            spinner.classList.add('active');
+            errorMessage.classList.add('hidden');
+            
+            try {
+                // Simulate API call (replace with actual API endpoint)
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
+                
+                if (response.ok) {
+                    // Redirect to dashboard on success
+                    window.location.href = '/dashboard.html';
+                } else {
+                    // Show error message
+                    const data = await response.json();
+                    errorMessage.textContent = data.message || 'Login gagal. Silakan coba lagi.';
+                    errorMessage.classList.remove('hidden');
+                }
+            } catch (error) {
+                // Show error message for network errors
+                errorMessage.textContent = 'Terjadi kesalahan. Silakan coba lagi.';
+                errorMessage.classList.remove('hidden');
+            } finally {
+                // Hide loading spinner
+                spinner.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
