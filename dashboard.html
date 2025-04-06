@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AI Mathanda</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .loading-spinner {
+            display: none;
+        }
+        .loading-spinner.active {
+            display: flex;
+        }
+        @keyframes mathSpin {
+            0%, 100% { content: "∑"; }
+            25% { content: "∏"; }
+            50% { content: "√"; }
+            75% { content: "∫"; }
+        }
+        .loading-spinner::after {
+            content: "∑";
+            animation: mathSpin 2s infinite;
+            font-size: 2rem;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-white h-screen flex overflow-hidden">
+    <!-- Sidebar -->
+    <div class="hidden md:flex md:flex-shrink-0">
+        <div class="flex flex-col w-64 border-r border-black">
+            <!-- Sidebar Header -->
+            <div class="flex items-center h-16 flex-shrink-0 px-4 border-b border-black">
+                <span class="text-xl font-bold">AI Mathanda</span>
+            </div>
+
+            <!-- User Profile -->
+            <div class="flex-1 flex flex-col overflow-y-auto">
+                <div class="p-4 border-b border-black">
+                    <div class="flex items-center">
+                        <img class="h-10 w-10 rounded-full bg-gray-200" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="Profile">
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-900">John Doe</p>
+                            <p class="text-xs text-gray-500">john@example.com</p>
+                        </div>
+                    </div>
+                    <!-- Token Counter -->
+                    <div class="mt-4 p-3 bg-gray-50 rounded-md">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">Sisa Token</span>
+                            <span class="text-lg font-bold" id="tokenCounter">100</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="px-2 py-4 space-y-1">
+                    <a href="#" class="chat-tab bg-black text-white group flex items-center px-2 py-2 text-sm font-medium rounded-md" onclick="switchTab('chat')">
+                        <i class="fas fa-comments mr-3"></i>
+                        Chat AI
+                    </a>
+                    <a href="#" class="topup-tab text-gray-600 hover:bg-gray-50 group flex items-center px-2 py-2 text-sm font-medium rounded-md" onclick="switchTab('topup')">
+                        <i class="fas fa-coins mr-3"></i>
+                        Top-up Token
+                    </a>
+                    <a href="#" class="text-gray-600 hover:bg-gray-50 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                        <i class="fas fa-info-circle mr-3"></i>
+                        Info Kontak Admin
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Logout Button -->
+            <div class="flex-shrink-0 flex border-t border-black p-4">
+                <button onclick="logout()" class="flex-shrink-0 w-full group block">
+                    <div class="flex items-center">
+                        <i class="fas fa-sign-out-alt mr-3"></i>
+                        <div class="text-sm font-medium text-gray-700">Logout</div>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex flex-col w-0 flex-1 overflow-hidden">
+        <!-- Mobile Header -->
+        <div class="md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3 border-b border-black">
+            <button type="button" onclick="toggleMobileSidebar()" class="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+        <!-- Chat Section -->
+        <div id="chatSection" class="flex-1 relative z-0 flex overflow-hidden">
+            <main class="flex-1 relative z-0 overflow-y-auto focus:outline-none">
+                <!-- Chat Messages -->
+                <div class="chat-messages p-4 space-y-4 h-[calc(100vh-200px)] overflow-y-auto no-scrollbar">
+                    <!-- AI Welcome Message -->
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <img class="h-10 w-10 rounded-full" src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="AI">
+                        </div>
+                        <div class="ml-3">
+                            <div class="bg-gray-100 p-3 rounded-lg">
+                                <p class="text-sm text-gray-900">
+                                    Halo! Saya siap membantu Anda dengan soal matematika. Silakan kirimkan pertanyaan atau foto soal Anda.
+                                </p>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">AI Assistant</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Input -->
+                <div class="absolute bottom-0 inset-x-0 p-4 border-t border-black bg-white">
+                    <div class="flex space-x-3">
+                        <div class="flex-1">
+                            <textarea rows="1" id="chatInput" class="block w-full rounded-md border border-black shadow-sm focus:border-black focus:ring-black sm:text-sm" placeholder="Ketik pesan Anda..."></textarea>
+                        </div>
+                        <button type="button" onclick="uploadImage()" class="inline-flex items-center px-4 py-2 border border-black rounded-md shadow-sm text-sm font-medium text-black bg-white hover:bg-black hover:text-white">
+                            <i class="fas fa-image"></i>
+                        </button>
+                        <button type="button" onclick="sendMessage()" class="inline-flex items-center px-4 py-2 border border-black rounded-md shadow-sm text-sm font-medium text-black bg-white hover:bg-black hover:text-white">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                    <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+                </div>
+            </main>
+        </div>
+
+        <!-- Top-up Section -->
+        <div id="topupSection" class="hidden flex-1 relative z-0 overflow-y-auto focus:outline-none">
+            <div class="py-6 px-4 sm:px-6 lg:px-8">
+                <h2 class="text-2xl font-bold mb-6">Top-up Token</h2>
+
+                <!-- Package Selection -->
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+                    <!-- 50 Token Package -->
+                    <div class="package-card border border-black rounded-lg p-4 cursor-pointer hover:bg-gray-50" onclick="selectPackage('50')">
+                        <h3 class="text-lg font-medium">Paket 50 Token</h3>
+                        <p class="text-2xl font-bold mt-2">Rp 25.000</p>
+                        <div class="mt-4 text-sm text-gray-500">
+                            <p>• 50 token untuk chat</p>
+                            <p>• Valid 30 hari</p>
+                        </div>
+                    </div>
+
+                    <!-- 100 Token Package -->
+                    <div class="package-card border border-black rounded-lg p-4 cursor-pointer hover:bg-gray-50" onclick="selectPackage('100')">
+                        <h3 class="text-lg font-medium">Paket 100 Token</h3>
+                        <p class="text-2xl font-bold mt-2">Rp 50.000</p>
+                        <div class="mt-4 text-sm text-gray-500">
+                            <p>• 100 token untuk chat</p>
+                            <p>• Valid 30 hari</p>
+                        </div>
+                    </div>
+
+                    <!-- 200 Token Package -->
+                    <div class="package-card border border-black rounded-lg p-4 cursor-pointer hover:bg-gray-50" onclick="selectPackage('200')">
+                        <h3 class="text-lg font-medium">Paket 200 Token</h3>
+                        <p class="text-2xl font-bold mt-2">Rp 100.000</p>
+                        <div class="mt-4 text-sm text-gray-500">
+                            <p>• 200 token untuk chat</p>
+                            <p>• Valid 30 hari</p>
+                        </div>
+                    </div>
+
+                    <!-- Custom Amount -->
+                    <div class="package-card border border-black rounded-lg p-4">
+                        <h3 class="text-lg font-medium">Isi Sendiri</h3>
+                        <div class="mt-2">
+                            <input type="number" min="50" placeholder="Min. 50 token" id="customTokenAmount" 
+                                   class="w-full border border-black rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black"
+                                   onchange="calculateCustomPrice()">
+                        </div>
+                        <p class="text-2xl font-bold mt-2" id="customPrice">Rp 0</p>
+                        <div class="mt-4 text-sm text-gray-500">
+                            <p>• Minimal 50 token</p>
+                            <p>• Rp 500/token</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transfer Instructions -->
+                <div class="border border-black rounded-lg p-6 mb-8">
+                    <h3 class="text-lg font-medium mb-4">Instruksi Transfer</h3>
+                    
+                    <!-- Bank Details -->
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                            <div>
+                                <p class="text-sm text-gray-500">Bank BCA</p>
+                                <p class="text-lg font-medium" id="bankAccount">1234 5678 9012</p>
+                            </div>
+                            <button onclick="copyBankAccount()" class="px-3 py-1 border border-black rounded-md hover:bg-black hover:text-white">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                            <div>
+                                <p class="text-sm text-gray-500">DANA</p>
+                                <p class="text-lg font-medium" id="danaAccount">0812 3456 7890</p>
+                            </div>
+                            <button onclick="copyDanaAccount()" class="px-3 py-1 border border-black rounded-md hover:bg-black hover:text-white">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Upload Proof -->
+                    <div class="mt-6">
+                        <label class="block text-sm font-medium text-gray-700">Upload Bukti Transfer</label>
+                        <div class="mt-2 flex justify-center px-6 pt-5 pb-6 border-2 border-black border-dashed rounded-md">
+                            <div class="space-y-1 text-center">
+                                <i class="fas fa-upload text-4xl text-gray-400"></i>
+                                <div class="flex text-sm text-gray-600">
+                                    <label for="proofFile" class="relative cursor-pointer bg-white rounded-md font-medium text-black hover:text-gray-500">
+                                        <span>Upload bukti transfer</span>
+                                        <input id="proofFile" name="proofFile" type="file" class="sr-only" accept="image/*" onchange="previewProof(event)">
+                                    </label>
+                                </div>
+                                <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                            </div>
+                        </div>
+                        <div id="proofPreview" class="mt-4 hidden">
+                            <img src="" alt="Preview" class="max-w-xs rounded-md">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button onclick="submitTopup()" class="w-full bg-white border border-black text-black px-4 py-2 rounded-md hover:bg-black hover:text-white">
+                    Ajukan Top-up
+                </button>
+
+                <!-- Loading Spinner -->
+                <div class="loading-spinner justify-center items-center mt-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
